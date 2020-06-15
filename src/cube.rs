@@ -2,7 +2,7 @@ use std::str::FromStr;
 use strum;
 use strum_macros::EnumString;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct CubeState {
     pub cp: [i8; 8],
     pub co: [i8; 8],
@@ -10,14 +10,14 @@ pub struct CubeState {
     pub eo: [i8; 12],
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum Direction {
     Normal,
     Prime,
     Double,
 }
 
-#[derive(PartialEq, Eq, EnumString, Debug)]
+#[derive(PartialEq, Eq, EnumString, Debug, Clone, Copy)]
 pub enum BaseMoveToken {
     U,
     D,
@@ -27,11 +27,49 @@ pub enum BaseMoveToken {
     B,
 }
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub struct MoveInstance {
     pub basemove: BaseMoveToken,
     pub dir: Direction,
 }
+
+impl MoveInstance {
+    pub fn new(basemove : BaseMoveToken, dir: Direction) -> MoveInstance {
+        MoveInstance {
+            basemove,
+            dir
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! cube_move {
+    ($basemove: ident, $dir:ident) => {
+        {
+            MoveInstance {
+                basemove: BaseMoveToken::$basemove,
+                dir: Direction::$dir,
+            }
+        }
+    }
+}
+
+type MoveSequence = Vec<MoveInstance>;
+
+
+// // bitvector: [UDLRFB] x [_'2] e.g. U, U', U2, etc
+// pub fn get_forbidden_post_moves(moves: MoveSequence) -> u32{
+//     // depends on the last two moves
+//     if moves.len() == 0 {
+//         0
+//     } else if moves.len() <= 1 {
+//         let Some(sole_move) = moves.iter().next();
+
+
+//     } else {
+//         let last_two = moves.iter().rev().take(2);
+//     }
+// }
 
 // corners: UBL UBR UFR UFL DFL DFR DBR DBL
 // edges: UB UR UF UL BL BR FR FL DF DR DB DL
