@@ -1,5 +1,3 @@
-use std::str::FromStr;
-use strum;
 use strum_macros::EnumString;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
@@ -54,7 +52,28 @@ macro_rules! cube_move {
     }
 }
 
-type MoveSequence = Vec<MoveInstance>;
+pub const ALL_MOVES: [MoveInstance; 18] = [
+    cube_move!(U, Normal),
+    cube_move!(U, Prime),
+    cube_move!(U, Double),
+    cube_move!(D, Normal),
+    cube_move!(D, Prime),
+    cube_move!(D, Double),
+    cube_move!(L, Normal),
+    cube_move!(L, Prime),
+    cube_move!(L, Double),
+    cube_move!(R, Normal),
+    cube_move!(R, Prime),
+    cube_move!(R, Double),
+    cube_move!(F, Normal),
+    cube_move!(F, Prime),
+    cube_move!(F, Double),
+    cube_move!(B, Normal),
+    cube_move!(B, Prime),
+    cube_move!(B, Double),
+];
+
+pub type MoveSequence = Vec<MoveInstance>;
 
 
 // // bitvector: [UDLRFB] x [_'2] e.g. U, U', U2, etc
@@ -113,7 +132,10 @@ macro_rules! apply_orientation {
         } else {
             let mut new_array = $og_state.clone();
             for i in 0..$og_state.len() {
-                new_array[i] = ($og_state[i] + $delta[i]) % $num_orientations;
+                new_array[i] = (($og_state[i] + $delta[i] + $num_orientations) % $num_orientations);
+                if new_array[i] == 2 {
+                    new_array[i] = -1;
+                }
             }
             new_array
         }
@@ -146,6 +168,10 @@ impl CubeState {
     pub fn apply_move_instances(&self, moves: &Vec<MoveInstance>) -> Self {
         moves.iter().fold(self.clone(), |acc, mov| acc.apply_move_instance(&mov))
     }
+
+    // pub fn random() -> Self {
+
+    // }
 }
 
 pub const MOVE_U: Move = Move {

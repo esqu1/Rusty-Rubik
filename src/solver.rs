@@ -6,31 +6,10 @@ use std::collections::HashSet;
 use priority_queue::PriorityQueue;
 // naive bfs
 
-const ALL_MOVES: [MoveInstance; 18] = [
-    cube_move!(U, Normal),
-    cube_move!(U, Prime),
-    cube_move!(U, Double),
-    cube_move!(D, Normal),
-    cube_move!(D, Prime),
-    cube_move!(D, Double),
-    cube_move!(L, Normal),
-    cube_move!(L, Prime),
-    cube_move!(L, Double),
-    cube_move!(R, Normal),
-    cube_move!(R, Prime),
-    cube_move!(R, Double),
-    cube_move!(F, Normal),
-    cube_move!(F, Prime),
-    cube_move!(F, Double),
-    cube_move!(B, Normal),
-    cube_move!(B, Prime),
-    cube_move!(B, Double),
-];
-
 pub trait Solver {
     fn new(state: CubeState) -> Self;
     fn get_start_state(&self) -> &CubeState;
-    fn solve(&self) -> Vec<MoveInstance>;
+    fn solve(&self) -> MoveSequence;
 }
 
 pub struct BFSSolver {}
@@ -50,7 +29,7 @@ impl Solver for AStarSolver {
         &self.start_state
     }
 
-    fn solve(&self) -> Vec<MoveInstance> {
+    fn solve(&self) -> MoveSequence {
         let mut queue = PriorityQueue::new();
         let mut visited = HashSet::<CubeState>::new();
         let mut come_from = HashMap::<CubeState, (CubeState, MoveInstance)>::new();
@@ -115,7 +94,7 @@ impl Solver for IDASolver {
         &self.start_state
     }
 
-    fn solve(&self) -> Vec<MoveInstance> {
+    fn solve(&self) -> MoveSequence {
         vec![]
     }
 }
