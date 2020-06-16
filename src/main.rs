@@ -8,8 +8,8 @@ mod parser;
 mod pruning;
 mod solver;
 
-use solver::Solver;
 use pruning::generate_pruning_table_corners;
+use solver::Solver;
 
 fn main() {
     let matches = App::new("Rsubik")
@@ -27,7 +27,8 @@ fn main() {
     let pruning = matches.is_present("pruning");
 
     if pruning {
-        generate_pruning_table_corners(String::from("test.pt"));
+        generate_pruning_table_corners(String::from("test.pt"))
+            .expect("Could not generate pruning table.");
     } else {
         let scramble = std::env::args().nth(1).unwrap_or(String::from("U2 F"));
         let parsed_seq = parser::parse_scramble(&scramble).unwrap();

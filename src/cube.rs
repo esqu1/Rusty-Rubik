@@ -31,6 +31,8 @@ pub struct MoveInstance {
     pub dir: Direction,
 }
 
+pub type MoveSequence = Vec<MoveInstance>;
+
 impl MoveInstance {
     pub fn new(basemove : BaseMoveToken, dir: Direction) -> MoveInstance {
         MoveInstance {
@@ -39,56 +41,6 @@ impl MoveInstance {
         }
     }
 }
-
-#[macro_export]
-macro_rules! cube_move {
-    ($basemove: ident, $dir:ident) => {
-        {
-            MoveInstance {
-                basemove: BaseMoveToken::$basemove,
-                dir: Direction::$dir,
-            }
-        }
-    }
-}
-
-pub const ALL_MOVES: [MoveInstance; 18] = [
-    cube_move!(U, Normal),
-    cube_move!(U, Prime),
-    cube_move!(U, Double),
-    cube_move!(D, Normal),
-    cube_move!(D, Prime),
-    cube_move!(D, Double),
-    cube_move!(L, Normal),
-    cube_move!(L, Prime),
-    cube_move!(L, Double),
-    cube_move!(R, Normal),
-    cube_move!(R, Prime),
-    cube_move!(R, Double),
-    cube_move!(F, Normal),
-    cube_move!(F, Prime),
-    cube_move!(F, Double),
-    cube_move!(B, Normal),
-    cube_move!(B, Prime),
-    cube_move!(B, Double),
-];
-
-pub type MoveSequence = Vec<MoveInstance>;
-
-
-// // bitvector: [UDLRFB] x [_'2] e.g. U, U', U2, etc
-// pub fn get_forbidden_post_moves(moves: MoveSequence) -> u32{
-//     // depends on the last two moves
-//     if moves.len() == 0 {
-//         0
-//     } else if moves.len() <= 1 {
-//         let Some(sole_move) = moves.iter().next();
-
-
-//     } else {
-//         let last_two = moves.iter().rev().take(2);
-//     }
-// }
 
 // corners: UBL UBR UFR UFL DFL DFR DBR DBL
 // edges: UB UR UF UL BL BR FR FL DF DR DB DL
@@ -100,13 +52,14 @@ pub struct Move {
     pub eo_change: [i8; 12],
 }
 
-impl Default for CubeState {
-    fn default() -> CubeState {
-        CubeState {
-            cp: [0, 1, 2, 3, 4, 5, 6, 7],
-            co: [0, 0, 0, 0, 0, 0, 0, 0],
-            ep: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-            eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+#[macro_export]
+macro_rules! cube_move {
+    ($basemove: ident, $dir:ident) => {
+        {
+            MoveInstance {
+                basemove: BaseMoveToken::$basemove,
+                dir: Direction::$dir,
+            }
         }
     }
 }
@@ -142,6 +95,46 @@ macro_rules! apply_orientation {
     }};
 }
 
+
+
+// bitvector: [UDLRFB] x [_'2] e.g. U, U', U2, etc
+// pub fn get_allowed_post_moves(moves: MoveSequence) -> u32 {
+//     // depends on the last two moves
+//     if moves.len() == 0 {
+//         0
+//     } else if moves.len() <= 1 {
+//         let Some(sole_move) = moves.iter().next();
+
+
+//     } else {
+//         let last_two = moves.iter().rev().take(2);
+//     }
+// }
+
+
+
+impl Default for CubeState {
+    fn default() -> CubeState {
+        CubeState {
+            cp: [0, 1, 2, 3, 4, 5, 6, 7],
+            co: [0, 0, 0, 0, 0, 0, 0, 0],
+            ep: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            eo: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        }
+    }
+}
+
+fn get_move_matrix(mov: &BaseMoveToken) -> Move {
+    match mov {
+        BaseMoveToken::U => MOVE_U,
+        BaseMoveToken::D => MOVE_D,
+        BaseMoveToken::L => MOVE_L,
+        BaseMoveToken::R => MOVE_R,
+        BaseMoveToken::F => MOVE_F,
+        BaseMoveToken::B => MOVE_B, 
+    }
+}
+
 impl CubeState {
     // TODO: change move to move instance
     pub fn apply_basemove(&self, m: &BaseMoveToken) -> Self {
@@ -173,6 +166,27 @@ impl CubeState {
 
     // }
 }
+
+pub const ALL_MOVES: [MoveInstance; 18] = [
+    cube_move!(U, Normal),
+    cube_move!(U, Prime),
+    cube_move!(U, Double),
+    cube_move!(D, Normal),
+    cube_move!(D, Prime),
+    cube_move!(D, Double),
+    cube_move!(L, Normal),
+    cube_move!(L, Prime),
+    cube_move!(L, Double),
+    cube_move!(R, Normal),
+    cube_move!(R, Prime),
+    cube_move!(R, Double),
+    cube_move!(F, Normal),
+    cube_move!(F, Prime),
+    cube_move!(F, Double),
+    cube_move!(B, Normal),
+    cube_move!(B, Prime),
+    cube_move!(B, Double),
+];
 
 pub const MOVE_U: Move = Move {
     cp_change: [1, 2, 3, 0, 4, 5, 6, 7],
@@ -216,13 +230,3 @@ pub const MOVE_B: Move = Move {
     eo_change: [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
 };
 
-pub fn get_move_matrix(mov: &BaseMoveToken) -> Move {
-    match mov {
-        BaseMoveToken::U => MOVE_U,
-        BaseMoveToken::D => MOVE_D,
-        BaseMoveToken::L => MOVE_L,
-        BaseMoveToken::R => MOVE_R,
-        BaseMoveToken::F => MOVE_F,
-        BaseMoveToken::B => MOVE_B, 
-    }
-}
