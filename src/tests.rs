@@ -1,6 +1,3 @@
-mod cube;
-mod parser;
-
 #[cfg(test)]
 mod tests {
 
@@ -43,6 +40,13 @@ mod tests {
                 dir: crate::cube::Direction::Prime,
             }
         )
+    }
+
+    #[test]
+    fn index_of_solved_state() {
+        let (c, e) = crate::cube::get_index_of_state(&crate::cube::CubeState::default());
+        assert_eq!(c, 0);
+        assert_eq!(e, 0); 
     }
 
     #[test]

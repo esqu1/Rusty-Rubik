@@ -2,9 +2,9 @@ use strum_macros::EnumString;
 
 #[derive(Clone, Debug, Hash, PartialEq, Eq)]
 pub struct CubeState {
-    pub cp: [i8; 8],
+    pub cp: [u8; 8],
     pub co: [i8; 8],
-    pub ep: [i8; 12],
+    pub ep: [u8; 12],
     pub eo: [i8; 12],
 }
 
@@ -34,11 +34,8 @@ pub struct MoveInstance {
 pub type MoveSequence = Vec<MoveInstance>;
 
 impl MoveInstance {
-    pub fn new(basemove : BaseMoveToken, dir: Direction) -> MoveInstance {
-        MoveInstance {
-            basemove,
-            dir
-        }
+    pub fn new(basemove: BaseMoveToken, dir: Direction) -> MoveInstance {
+        MoveInstance { basemove, dir }
     }
 }
 
@@ -46,22 +43,20 @@ impl MoveInstance {
 // edges: UB UR UF UL BL BR FR FL DF DR DB DL
 
 pub struct Move {
-    pub cp_change: [i8; 8], // a[i] gives the position i goes to
+    pub cp_change: [u8; 8], // a[i] gives the position i goes to
     pub co_change: [i8; 8],
-    pub ep_change: [i8; 12],
+    pub ep_change: [u8; 12],
     pub eo_change: [i8; 12],
 }
 
 #[macro_export]
 macro_rules! cube_move {
-    ($basemove: ident, $dir:ident) => {
-        {
-            MoveInstance {
-                basemove: BaseMoveToken::$basemove,
-                dir: Direction::$dir,
-            }
+    ($basemove: ident, $dir:ident) => {{
+        MoveInstance {
+            basemove: BaseMoveToken::$basemove,
+            dir: Direction::$dir,
         }
-    }
+    }};
 }
 
 macro_rules! apply_permutation {
@@ -95,8 +90,6 @@ macro_rules! apply_orientation {
     }};
 }
 
-
-
 // bitvector: [UDLRFB] x [_'2] e.g. U, U', U2, etc
 // pub fn get_allowed_post_moves(moves: MoveSequence) -> u32 {
 //     // depends on the last two moves
@@ -105,13 +98,10 @@ macro_rules! apply_orientation {
 //     } else if moves.len() <= 1 {
 //         let Some(sole_move) = moves.iter().next();
 
-
 //     } else {
 //         let last_two = moves.iter().rev().take(2);
 //     }
 // }
-
-
 
 impl Default for CubeState {
     fn default() -> CubeState {
@@ -131,8 +121,65 @@ fn get_move_matrix(mov: &BaseMoveToken) -> Move {
         BaseMoveToken::L => MOVE_L,
         BaseMoveToken::R => MOVE_R,
         BaseMoveToken::F => MOVE_F,
-        BaseMoveToken::B => MOVE_B, 
+        BaseMoveToken::B => MOVE_B,
     }
+}
+
+fn factorial(num: u32) -> u32 {
+    match num {
+        0 => 1,
+        1 => 1,
+        _ => factorial(num - 1) * num,
+    }
+}
+
+// range:
+// corners: [0, 8! - 1]
+// edges: [0, 12! - 1]
+pub fn get_index_of_permutation(perm: &[u8]) -> u32 {
+    // 2 bytes suffice for 12!
+    let mut fin = 0;
+    let iter = perm.iter();
+    for i in 0..perm.len() {
+        let mut res = 0;
+        for j in (i + 1)..perm.len() {
+            if perm[j] < perm[i] {
+                res += 1;
+            }
+        }
+        fin += res * factorial((perm.len() - i - 1) as u32);
+    }
+    fin as u32
+}
+
+// range:
+// corners: [0, 3^7 - 1]
+// edges: [0, 2^11 - 1]
+pub fn get_index_of_orientation(ori: &[i8], num_orientations: u8) -> u16 {
+    let mut result = 0;
+    for (i, val) in ori.iter().enumerate() {
+        if i == ori.len() - 1 {
+            break;
+        }
+        let pos = (val + num_orientations as i8) % num_orientations as i8;
+        result += pos as u16;
+        if i != ori.len() - 2 {
+            result *= num_orientations as u16;
+        }
+    }
+    result
+}
+
+pub fn get_index_of_state(state: &CubeState) -> (u32, u64) {
+    let cp_index = get_index_of_permutation(&state.cp);
+    // println!("cp index: {}", cp_index);
+    let co_index = get_index_of_orientation(&state.co, 3);
+    // println!("co index: {}", co_index);
+    let corner_index = cp_index * u32::pow(3, 7) + (co_index as u32);
+    let ep_index = get_index_of_permutation(&state.ep) as u64;
+    let eo_index = get_index_of_orientation(&state.eo, 2);
+    let edge_index = ep_index * u64::pow(2, 11) + (eo_index as u64);
+    (corner_index, edge_index)
 }
 
 impl CubeState {
@@ -152,14 +199,16 @@ impl CubeState {
     pub fn apply_move_instance(&self, m: &MoveInstance) -> Self {
         let num_turns = match &m.dir {
             Direction::Normal => 1,
-            Direction::Prime => 3, 
+            Direction::Prime => 3,
             Direction::Double => 2,
         };
         (0..num_turns).fold(self.clone(), |acc, _| acc.apply_basemove(&m.basemove))
     }
 
     pub fn apply_move_instances(&self, moves: &Vec<MoveInstance>) -> Self {
-        moves.iter().fold(self.clone(), |acc, mov| acc.apply_move_instance(&mov))
+        moves
+            .iter()
+            .fold(self.clone(), |acc, mov| acc.apply_move_instance(&mov))
     }
 
     // pub fn random() -> Self {
@@ -229,4 +278,3 @@ pub const MOVE_B: Move = Move {
     ep_change: [4, 1, 2, 3, 10, 0, 6, 7, 8, 9, 5, 11],
     eo_change: [1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
 };
-

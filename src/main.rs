@@ -1,15 +1,14 @@
-extern crate strum;
-extern crate strum_macros;
-
 use clap::{App, Arg};
 
 mod cube;
 mod parser;
 mod pruning;
 mod solver;
+mod tests;
 
-use pruning::generate_pruning_table_corners;
+use pruning::*;
 use solver::Solver;
+use std::thread;
 
 fn main() {
     let matches = App::new("Rsubik")
@@ -20,15 +19,27 @@ fn main() {
                 .short('p')
                 .long("pruning")
                 .takes_value(false)
-                .help("Flag to say whether to generate pruning tables."),
+                .about("Flag to say whether to generate pruning tables."),
         )
         .get_matches();
 
-    let pruning = matches.is_present("pruning");
-
-    if pruning {
-        generate_pruning_table_corners(String::from("test.pt"))
-            .expect("Could not generate pruning table.");
+    if matches.is_present("pruning") {
+        let corners_prune = thread::spawn(|| {
+            generate_pruning_table_corners(String::from("corners.pt"));
+            println!("Corners pruning table finished!");
+        });
+        let eo_prune = thread::spawn(|| {
+            generate_pruning_table_eo(String::from("edges_o.pt"));
+            println!("EO pruning table finished!");
+        });
+        let ep_prune = thread::spawn(|| {
+            generate_pruning_table_ep(String::from("edges_p.pt"));
+            println!("EP pruning table finished!");
+        });
+        corners_prune.join().unwrap();
+        eo_prune.join().unwrap();
+        ep_prune.join().unwrap();
+        println!("Done generating pruning tables!");
     } else {
         let scramble = std::env::args().nth(1).unwrap_or(String::from("U2 F"));
         let parsed_seq = parser::parse_scramble(&scramble).unwrap();
