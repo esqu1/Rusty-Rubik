@@ -19,6 +19,17 @@ pub struct PruningTables {
 }
 
 impl PruningTables {
+    pub fn default_tables() -> Self {
+        let corners = std::fs::read("corners.pt").unwrap();
+        let edges_o = std::fs::read("edges_o.pt").unwrap();
+        let edges_p = std::fs::read("edges_p.pt").unwrap();
+        PruningTables {
+            corners,
+            eo: edges_o,
+            ep: edges_p,
+        }
+    }
+
     /// Computes a lower bound on the number of moves needed to
     /// solve the given state, based on the pruning table values.
     pub fn compute_h_value(&self, state: &CubeState) -> u8 {

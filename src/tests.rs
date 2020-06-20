@@ -2,6 +2,8 @@
 mod tests {
     use crate::cube::*;
     use crate::parser::*;
+    use crate::pruning::*;
+    use crate::solver::*;
 
     // PARSER TESTS
     #[test]
@@ -63,40 +65,50 @@ mod tests {
 
     // PRUNING TABLE TESTS
     #[test]
+    #[ignore]
     fn pruning_table_of_solved_is_zero() {
-        let corners = std::fs::read("corners.pt").unwrap();
-        let edges_o = std::fs::read("edges_o.pt").unwrap();
-        let edges_p = std::fs::read("edges_p.pt").unwrap();
-        assert_eq!(edges_o[0], 0);
-        assert_eq!(edges_p[0], 0);
-        assert_eq!(corners[0], 0);
+        let tables = PruningTables::default_tables();
+        assert_eq!(tables.eo[0], 0);
+        assert_eq!(tables.ep[0], 0);
+        assert_eq!(tables.corners[0], 0);
     }
 
     #[test]
+    #[ignore]
     fn one_move_pruning_top() {
-        let corners = std::fs::read("corners.pt").unwrap();
-        let edges_o = std::fs::read("edges_o.pt").unwrap();
-        let edges_p = std::fs::read("edges_p.pt").unwrap();
+        let tables = PruningTables::default_tables();
         let solved = CubeState::default();
         let twisted =
             solved.apply_move_instance(&MoveInstance::new(BaseMoveToken::U, Direction::Normal));
         let (c, eo, ep) = get_index_of_state(&twisted);
-        assert_eq!(corners[c as usize], 1);
-        assert_eq!(edges_o[eo as usize], 0);
-        assert_eq!(edges_p[ep as usize], 1);
+        assert_eq!(tables.corners[c as usize], 1);
+        assert_eq!(tables.eo[eo as usize], 0);
+        assert_eq!(tables.ep[ep as usize], 1);
     }
 
     #[test]
+    #[ignore]
     fn one_move_pruning_front() {
-        let corners = std::fs::read("corners.pt").unwrap();
-        let edges_o = std::fs::read("edges_o.pt").unwrap();
-        let edges_p = std::fs::read("edges_p.pt").unwrap();
+        let tables = PruningTables::default_tables();
         let solved = CubeState::default();
         let twisted =
             solved.apply_move_instance(&MoveInstance::new(BaseMoveToken::F, Direction::Normal));
         let (c, eo, ep) = get_index_of_state(&twisted);
-        assert_eq!(corners[c as usize], 1);
-        assert_eq!(edges_o[eo as usize], 1);
-        assert_eq!(edges_p[ep as usize], 1);
+        assert_eq!(tables.corners[c as usize], 1);
+        assert_eq!(tables.eo[eo as usize], 1);
+        assert_eq!(tables.ep[ep as usize], 1);
+    }
+
+    #[test]
+    #[ignore]
+    fn u_perm_optimal() {
+        let tables = PruningTables::default_tables();
+        let scramble = parse_scramble("R U' R U R U R U' R' U' R2").unwrap();
+        let solved = CubeState::default();
+        let twisted = solved.apply_move_instances(&scramble);
+        let solver = IDASolver::new(twisted, &tables);
+
+        let solution = solver.solve();
+        assert_eq!(solution.len(), 9);
     }
 }

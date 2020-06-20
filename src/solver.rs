@@ -127,7 +127,6 @@ impl<'a> IDASolver<'a> {
         g: u8,
         bound: u8,
     ) -> SearchResult {
-        // println!("{:?}", curr_path);
         let last_h = self.pruning_tables.compute_h_value(&last_state);
         let f = g + last_h;
         if f > bound {
@@ -170,16 +169,7 @@ impl Solver for IDASolver<'_> {
     }
 
     fn solve(&self) -> MoveSequence {
-        // let corner_prune =
-        //     std::fs::read("corners.pt").expect("Error reading corners pruning table");
-        // let eo_prune = std::fs::read("edges_o.pt").expect("Error reading EO pruning table");
-        // let ep_prune = std::fs::read("edges_p.pt").expect("Error reading EP pruning table");
         let start_state = self.get_start_state();
-        // let pruning_tables = PruningTables {
-        //     corners: &corner_prune,
-        //     eo: &eo_prune,
-        //     ep: &ep_prune,
-        // };
 
         // initial lower bound on number of moves needed to solve start state
         let mut bound = self.pruning_tables.compute_h_value(&start_state);
