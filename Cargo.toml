@@ -1,5 +1,5 @@
 [package]
-name = "rsubik"
+name = "rusty-rubik"
 version = "0.1.0"
 authors = ["Brandon Lin <brandbest1@gmail.com>"]
 edition = "2018"

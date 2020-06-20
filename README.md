@@ -1,7 +1,7 @@
 Rusty Rubik
 ==
 
-**Rusty Rubik** is a Rubik's Cube solving program implemented in Rust. This project implements the following:
+**Rusty Rubik** is a Rubik's Cube solving program implemented in Rust. 
 
 
 Downloading
@@ -22,4 +22,11 @@ If you don't want to run it in release mode, simply leave out the `--release` fl
 To just build the project:
 ```
 cargo build --release
+```
+
+Documentation
+===
+You can build the documentation for this project via:
+```
+cargo doc --no-deps --open
 ```

@@ -90,18 +90,42 @@ macro_rules! apply_orientation {
     }};
 }
 
-// bitvector: [UDLRFB] x [_'2] e.g. U, U', U2, etc
-// pub fn get_allowed_post_moves(moves: MoveSequence) -> u32 {
-//     // depends on the last two moves
-//     if moves.len() == 0 {
-//         0
-//     } else if moves.len() <= 1 {
-//         let Some(sole_move) = moves.iter().next();
+pub fn get_basemove_pos(token: BaseMoveToken) -> u8 {
+    match token {
+        BaseMoveToken::U => 5,
+        BaseMoveToken::D => 4,
+        BaseMoveToken::L => 3,
+        BaseMoveToken::R => 2,
+        BaseMoveToken::F => 1,
+        BaseMoveToken::B => 0,
+    }
+}
 
-//     } else {
-//         let last_two = moves.iter().rev().take(2);
-//     }
-// }
+fn get_antipode(token: BaseMoveToken) -> BaseMoveToken {
+    match token {
+        BaseMoveToken::U => BaseMoveToken::D,
+        BaseMoveToken::D => BaseMoveToken::U,
+        BaseMoveToken::L => BaseMoveToken::R,
+        BaseMoveToken::R => BaseMoveToken::L,
+        BaseMoveToken::F => BaseMoveToken::B,
+        BaseMoveToken::B => BaseMoveToken::F,
+    }
+}
+
+// bitvector: [UDLRFB], 0 means it's allowed
+pub fn get_allowed_post_moves(prev_bv: u8, last_move: Option<BaseMoveToken>) -> u8 {
+    if let Some(lm) = last_move {
+        let antipode = get_antipode(lm);
+        if prev_bv & (1 << get_basemove_pos(antipode)) != 0 {
+            // then the antipode was already applied
+            (1 << get_basemove_pos(lm)) + (1 << get_basemove_pos(antipode))
+        } else {
+            1 << get_basemove_pos(lm)
+        }
+    } else {
+        0
+    }
+}
 
 impl Default for CubeState {
     fn default() -> CubeState {
@@ -170,7 +194,7 @@ pub fn get_index_of_orientation(ori: &[i8], num_orientations: u8) -> u16 {
     result
 }
 
-pub fn get_index_of_state(state: &CubeState) -> (u32, u64) {
+pub fn get_index_of_state(state: &CubeState) -> (u32, u16, u64) {
     let cp_index = get_index_of_permutation(&state.cp);
     // println!("cp index: {}", cp_index);
     let co_index = get_index_of_orientation(&state.co, 3);
@@ -178,8 +202,8 @@ pub fn get_index_of_state(state: &CubeState) -> (u32, u64) {
     let corner_index = cp_index * u32::pow(3, 7) + (co_index as u32);
     let ep_index = get_index_of_permutation(&state.ep) as u64;
     let eo_index = get_index_of_orientation(&state.eo, 2);
-    let edge_index = ep_index * u64::pow(2, 11) + (eo_index as u64);
-    (corner_index, edge_index)
+    // let edge_index = ep_index * u64::pow(2, 11) + (eo_index as u64);
+    (corner_index, eo_index, ep_index)
 }
 
 impl CubeState {

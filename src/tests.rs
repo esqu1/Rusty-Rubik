@@ -1,14 +1,16 @@
 #[cfg(test)]
 mod tests {
+    use crate::parser::*;
+    use crate::cube::*;
 
     // PARSER TESTS
     #[test]
     fn parse_single_move() {
         assert_eq!(
-            crate::parser::parse_scramble("U").unwrap()[0],
-            crate::cube::MoveInstance {
-                basemove: crate::cube::BaseMoveToken::U,
-                dir: crate::cube::Direction::Normal,
+            parse_scramble("U").unwrap()[0],
+            MoveInstance {
+                basemove: BaseMoveToken::U,
+                dir: Direction::Normal,
             }
         );
     }
@@ -16,10 +18,10 @@ mod tests {
     #[test]
     fn parse_single_move_with_spaces() {
         assert_eq!(
-            crate::parser::parse_scramble("U   \t").unwrap()[0],
-            crate::cube::MoveInstance {
-                basemove: crate::cube::BaseMoveToken::U,
-                dir: crate::cube::Direction::Normal,
+            parse_scramble("U   \t").unwrap()[0],
+            MoveInstance {
+                basemove: BaseMoveToken::U,
+                dir: Direction::Normal,
             }
         );
     }
@@ -27,30 +29,73 @@ mod tests {
     #[test]
     fn parse_multi_moves() {
         assert_eq!(
-            crate::parser::parse_scramble("U2 F'").unwrap()[0],
-            crate::cube::MoveInstance {
-                basemove: crate::cube::BaseMoveToken::U,
-                dir: crate::cube::Direction::Double,
+            parse_scramble("U2 F'").unwrap()[0],
+            MoveInstance {
+                basemove: BaseMoveToken::U,
+                dir: Direction::Double,
             }
         );
         assert_eq!(
-            crate::parser::parse_scramble("U2 F'").unwrap()[1],
-            crate::cube::MoveInstance {
-                basemove: crate::cube::BaseMoveToken::F,
-                dir: crate::cube::Direction::Prime,
+            parse_scramble("U2 F'").unwrap()[1],
+            MoveInstance {
+                basemove: BaseMoveToken::F,
+                dir: Direction::Prime,
             }
         )
     }
 
+    // CUBE STRUCTURE TESTS 
+
     #[test]
-    fn index_of_solved_state() {
-        let (c, e) = crate::cube::get_index_of_state(&crate::cube::CubeState::default());
-        assert_eq!(c, 0);
-        assert_eq!(e, 0); 
+    fn create_new_move_instance() {
+        let move_instance = MoveInstance::new(BaseMoveToken::F, Direction::Prime);
+        assert_eq!(move_instance.basemove, BaseMoveToken::F);
+        assert_eq!(move_instance.dir, Direction::Prime)
     }
 
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn index_of_solved_state() {
+        let (c, eo, ep) = get_index_of_state(&CubeState::default());
+        assert_eq!(c, 0);
+        assert_eq!(eo, 0);
+        assert_eq!(ep, 0); 
+    }
+
+    // PRUNING TABLE TESTS
+    #[test]
+    fn pruning_table_of_solved_is_zero() {
+        let corners = std::fs::read("corners.pt").unwrap();
+        let edges_o = std::fs::read("edges_o.pt").unwrap();
+        let edges_p = std::fs::read("edges_p.pt").unwrap();
+        assert_eq!(edges_o[0], 0);
+        assert_eq!(edges_p[0], 0);
+        assert_eq!(corners[0], 0);
+    }
+
+    #[test]
+    fn one_move_pruning_top() {
+        let corners = std::fs::read("corners.pt").unwrap();
+        let edges_o = std::fs::read("edges_o.pt").unwrap();
+        let edges_p = std::fs::read("edges_p.pt").unwrap(); 
+        let solved = CubeState::default();
+        let twisted = solved.apply_move_instance(&MoveInstance::new(BaseMoveToken::U, Direction::Normal));
+        let (c, eo, ep) = get_index_of_state(&twisted);
+        assert_eq!(corners[c as usize], 1);
+        assert_eq!(edges_o[eo as usize], 0);
+        assert_eq!(edges_p[ep as usize], 1);
+    }
+
+    #[test]
+    fn one_move_pruning_front() {
+        let corners = std::fs::read("corners.pt").unwrap();
+        let edges_o = std::fs::read("edges_o.pt").unwrap();
+        let edges_p = std::fs::read("edges_p.pt").unwrap(); 
+        let solved = CubeState::default();
+        let twisted = solved.apply_move_instance(&MoveInstance::new(BaseMoveToken::F, Direction::Normal));
+        let (c, eo, ep) = get_index_of_state(&twisted);
+        assert_eq!(corners[c as usize], 1);
+        assert_eq!(edges_o[eo as usize], 1);
+        assert_eq!(edges_p[ep as usize], 1);
+ 
     }
 }

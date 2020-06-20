@@ -1,20 +1,65 @@
+//! Contains utility methods of various puzzle solving methods.
+//!
+//! Includes A* search and iterative deepening A* (IDA*).
+
 use crate::cube::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
 use priority_queue::PriorityQueue;
-// naive bfs
 
+/**
+ * A generic solver trait.
+ */
 pub trait Solver {
+    /// Creates a new solver object, starting from a given starting configuration
+    /// of the Rubik's Cube.
     fn new(state: CubeState) -> Self;
+
+    /// Gets a reference to the starting configuration.
     fn get_start_state(&self) -> &CubeState;
+
+    /// Applies the solver-specific search algorithm to find a sequence
+    /// of moves that transform the starting state into the solved state.
     fn solve(&self) -> MoveSequence;
 }
 
-pub struct BFSSolver {}
+/**
+ * A struct holding pruning information for certain subgroups of the
+ * Rubik's Cube.
+ *
+ * Each pruning table provides a lower bound on how many moves are
+ * needed to transform a given state into the solved state within each subgroup.
+ * These tables are obtained from `pruning.rs`.
+ */
+pub struct PruningTables<'a> {
+    /// A pruning table representing the subgroup of corner permutation and orientation.
+    corners: &'a Vec<u8>,
+    /// A pruning table representing the subgroup of edge orientation.
+    eo: &'a Vec<u8>,
+    /// A pruning table representing the subgroup of edge permutation.
+    ep: &'a Vec<u8>,
+}
 
-pub struct DFSSolver {}
+impl PruningTables<'_> {
+    /// Computes a lower bound on the number of moves needed to
+    /// solve the given state, based on the pruning table values.
+    pub fn compute_h_value(&self, state: &CubeState) -> u8 {
+        let (corners, eo, ep) = get_index_of_state(&state);
+        std::cmp::max(
+            self.corners[corners as usize],
+            std::cmp::max(self.eo[eo as usize], self.ep[ep as usize]),
+        )
+    }
+}
 
+/**
+ * A solver implementing the A* search algorithm.
+ * 
+ * This solver is only able to handle short, small-depth scrambles due 
+ * to the massive space usage of A* search and similar BFS-style search algorithms.
+ * Thus, we strongly recommend using IDASolver instead.
+ */
 pub struct AStarSolver {
     start_state: CubeState,
 }
@@ -80,8 +125,42 @@ impl Solver for AStarSolver {
     }
 }
 
+/**
+ * A solver implementing the iterative deepening A* search algorithm [Korf, 1997].
+ * 
+ * This solver uses the pruning tables pre-computed in `pruning.rs` 
+ * to prevent the solver from exploring move sequences that will yield suboptimal 
+ * solutions. This is the method typically implemented in most optimal Rubik's Cube solvers.
+ */
 pub struct IDASolver {
     start_state: CubeState,
+}
+
+enum SearchResult {
+    Found,
+    NewBound(u8),
+}
+
+impl IDASolver {
+    fn search_for_solution(
+        curr_path: &mut MoveSequence,
+        last_state: &CubeState,
+        g: u8,
+        bound: u8,
+        pruning_tables: &PruningTables,
+    ) -> SearchResult {
+        let last_h = pruning_tables.compute_h_value(&last_state);
+        let f = g + last_h;
+        if f > bound {
+            SearchResult::NewBound(f)
+        } else if *last_state == CubeState::default() {
+            // yay it's solved!
+            SearchResult::Found
+        } else {
+            // TODO
+            SearchResult::Found
+        }
+    }
 }
 
 impl Solver for IDASolver {
@@ -94,6 +173,35 @@ impl Solver for IDASolver {
     }
 
     fn solve(&self) -> MoveSequence {
-        vec![]
+        let corner_prune =
+            std::fs::read("corners.pt").expect("Error reading corners pruning table");
+        let eo_prune = std::fs::read("edges_o.pt").expect("Error reading EO pruning table");
+        let ep_prune = std::fs::read("edges_p.pt").expect("Error reading EP pruning table");
+        let start_state = self.get_start_state();
+        let (corner_index, eo_index, ep_index) = get_index_of_state(&start_state);
+        let pruning_tables = PruningTables {
+            corners: &corner_prune,
+            eo: &eo_prune,
+            ep: &ep_prune,
+        };
+
+        // initial lower bound on number of moves needed to solve start state
+        let mut bound = std::cmp::max(
+            corner_prune[corner_index as usize],
+            std::cmp::max(eo_prune[eo_index as usize], ep_prune[ep_index as usize]),
+        );
+        let mut path: MoveSequence = vec![];
+        loop {
+            match IDASolver::search_for_solution(&mut path, &start_state, 0, bound, &pruning_tables)
+            {
+                SearchResult::Found => {
+                    break;
+                }
+                SearchResult::NewBound(t) => {
+                    bound = t;
+                }
+            }
+        }
+        path
     }
 }
