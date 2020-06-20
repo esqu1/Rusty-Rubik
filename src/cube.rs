@@ -88,7 +88,7 @@ macro_rules! apply_permutation {
         } else {
             let mut new_array = $og_state.clone();
             for i in 0..$og_state.len() {
-                new_array[i] = $og_state[$delta[i] as usize];
+                new_array[$delta[i] as usize] = $og_state[i];
             }
             new_array
         }

@@ -27,6 +27,8 @@ This will create pruning tables `corners.pt`, `edges_o.pt`, and `edges_p.pt` in 
 ./scripts/verify_checksum.sh
 ```
 
+On my CPU (AMD Ryzen 5 3600 @ 3.6 GHz, 6 cores) the pruning tables take about 10 minutes to generate, so I'm expecting most modern processors should take around 15-20 minutes to finish.  
+
 Then you can run the executable in `target/release/rusty-rubik`. You can see the available options using the `--help` flag:
 ```
 ./target/release/rusty-rubik --help

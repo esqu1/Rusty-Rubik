@@ -3,6 +3,7 @@
 //! Includes A* search and iterative deepening A* (IDA*).
 
 use crate::cube::*;
+use crate::pruning::PruningTables;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -18,35 +19,6 @@ pub trait Solver {
     /// Applies the solver-specific search algorithm to find a sequence
     /// of moves that transform the starting state into the solved state.
     fn solve(&self) -> MoveSequence;
-}
-
-/**
- * A struct holding pruning information for certain subgroups of the
- * Rubik's Cube.
- *
- * Each pruning table provides a lower bound on how many moves are
- * needed to transform a given state into the solved state within each subgroup.
- * These tables are obtained from `pruning.rs`.
- */
-pub struct PruningTables {
-    /// A pruning table representing the subgroup of corner permutation and orientation.
-    pub corners: Vec<u8>,
-    /// A pruning table representing the subgroup of edge orientation.
-    pub eo: Vec<u8>,
-    /// A pruning table representing the subgroup of edge permutation.
-    pub ep: Vec<u8>,
-}
-
-impl PruningTables {
-    /// Computes a lower bound on the number of moves needed to
-    /// solve the given state, based on the pruning table values.
-    pub fn compute_h_value(&self, state: &CubeState) -> u8 {
-        let (corners, eo, ep) = get_index_of_state(&state);
-        std::cmp::max(
-            self.corners[corners as usize],
-            std::cmp::max(self.eo[eo as usize], self.ep[ep as usize]),
-        )
-    }
 }
 
 /**
