@@ -98,4 +98,13 @@ mod tests {
         assert_eq!(edges_p[ep as usize], 1);
  
     }
+
+    #[test]
+    fn te() {
+        use crate::cube::BaseMoveToken::*;
+        use crate::cube::Direction::*;
+        let seq = vec![MoveInstance { basemove: F, dir: Prime }, MoveInstance { basemove: U, dir: Normal }, MoveInstance { basemove: F, dir: Prime }];
+        println!("{:b}", allowed_moves_after_seq(&seq));
+        //6180
+    }
 }

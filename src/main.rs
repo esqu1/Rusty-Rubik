@@ -9,6 +9,7 @@ mod tests;
 use pruning::*;
 use solver::Solver;
 use std::thread;
+use solver::PruningTables;
 
 fn main() {
     let matches = App::new("Rsubik")
@@ -41,11 +42,26 @@ fn main() {
         ep_prune.join().unwrap();
         println!("Done generating pruning tables!");
     } else {
-        let scramble = std::env::args().nth(1).unwrap_or(String::from("U2 F"));
+        let scramble = std::env::args().nth(1).unwrap_or(String::from("R U R' U' R U"));
         let parsed_seq = parser::parse_scramble(&scramble).unwrap();
         let solved = cube::CubeState::default();
         let new_state = solved.apply_move_instances(&parsed_seq);
-        let solver: solver::AStarSolver = solver::Solver::new(new_state);
+
+        // load the pruning tables
+        let corner_prune =
+            std::fs::read("corners.pt").expect("Error reading corners pruning table");
+        println!("Loaded corners pruning table.");
+        let eo_prune = std::fs::read("edges_o.pt").expect("Error reading EO pruning table");
+        println!("Loaded EO pruning table.");
+        let ep_prune = std::fs::read("edges_p.pt").expect("Error reading EP pruning table");
+        println!("Loaded EP pruning table.");
+        let pruning_tables = PruningTables {
+            corners: corner_prune,
+            eo: eo_prune,
+            ep: ep_prune,
+        };
+
+        let solver = solver::IDASolver::new(new_state, &pruning_tables);
         println!("{:?}", solver.solve());
     }
 }

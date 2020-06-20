@@ -25,6 +25,22 @@ pub enum BaseMoveToken {
     B,
 }
 
+impl std::fmt::Display for BaseMoveToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl std::fmt::Display for Direction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Direction::Normal => write!(f, ""),
+            Direction::Prime => write!(f, "'"),
+            Direction::Double => write!(f, "2"),
+        }
+    }
+}
+
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub struct MoveInstance {
     pub basemove: BaseMoveToken,
@@ -36,6 +52,12 @@ pub type MoveSequence = Vec<MoveInstance>;
 impl MoveInstance {
     pub fn new(basemove: BaseMoveToken, dir: Direction) -> MoveInstance {
         MoveInstance { basemove, dir }
+    }
+}
+
+impl std::fmt::Display for MoveInstance {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.basemove, self.dir)
     }
 }
 
@@ -127,6 +149,26 @@ pub fn get_allowed_post_moves(prev_bv: u8, last_move: Option<BaseMoveToken>) -> 
     }
 }
 
+pub fn allowed_moves_after_seq(moves: &MoveSequence) -> u8 {
+    match moves.len() {
+        0 => 0,
+        1 => {
+            let last_move = moves[moves.len() - 1];
+            1 << get_basemove_pos(last_move.basemove)
+        }
+        _ => {
+            let last_move = moves[moves.len() - 1];
+            let second_to_last = moves[moves.len() - 2];
+            if get_antipode(last_move.basemove) == second_to_last.basemove {
+                (1 << get_basemove_pos(last_move.basemove))
+                    + (1 << get_basemove_pos(second_to_last.basemove))
+            } else {
+                1 << get_basemove_pos(last_move.basemove)
+            }
+        }
+    }
+}
+
 impl Default for CubeState {
     fn default() -> CubeState {
         CubeState {
@@ -163,7 +205,6 @@ fn factorial(num: u32) -> u32 {
 pub fn get_index_of_permutation(perm: &[u8]) -> u32 {
     // 2 bytes suffice for 12!
     let mut fin = 0;
-    let iter = perm.iter();
     for i in 0..perm.len() {
         let mut res = 0;
         for j in (i + 1)..perm.len() {
@@ -207,7 +248,6 @@ pub fn get_index_of_state(state: &CubeState) -> (u32, u16, u64) {
 }
 
 impl CubeState {
-    // TODO: change move to move instance
     pub fn apply_basemove(&self, m: &BaseMoveToken) -> Self {
         let mov = get_move_matrix(m);
         let oriented_corners = apply_orientation!(&self.co, &mov.co_change, 3);
