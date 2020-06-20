@@ -7,9 +7,9 @@ mod solver;
 mod tests;
 
 use pruning::*;
+use solver::PruningTables;
 use solver::Solver;
 use std::thread;
-use solver::PruningTables;
 
 fn main() {
     let matches = App::new("Rsubik")
@@ -42,7 +42,9 @@ fn main() {
         ep_prune.join().unwrap();
         println!("Done generating pruning tables!");
     } else {
-        let scramble = std::env::args().nth(1).unwrap_or(String::from("R U R' U' R U"));
+        let scramble = std::env::args()
+            .nth(1)
+            .unwrap_or(String::from("R U R' U' R U"));
         let parsed_seq = parser::parse_scramble(&scramble).unwrap();
         let solved = cube::CubeState::default();
         let new_state = solved.apply_move_instances(&parsed_seq);

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
-    use crate::parser::*;
     use crate::cube::*;
+    use crate::parser::*;
 
     // PARSER TESTS
     #[test]
@@ -44,7 +44,7 @@ mod tests {
         )
     }
 
-    // CUBE STRUCTURE TESTS 
+    // CUBE STRUCTURE TESTS
 
     #[test]
     fn create_new_move_instance() {
@@ -58,7 +58,7 @@ mod tests {
         let (c, eo, ep) = get_index_of_state(&CubeState::default());
         assert_eq!(c, 0);
         assert_eq!(eo, 0);
-        assert_eq!(ep, 0); 
+        assert_eq!(ep, 0);
     }
 
     // PRUNING TABLE TESTS
@@ -76,9 +76,10 @@ mod tests {
     fn one_move_pruning_top() {
         let corners = std::fs::read("corners.pt").unwrap();
         let edges_o = std::fs::read("edges_o.pt").unwrap();
-        let edges_p = std::fs::read("edges_p.pt").unwrap(); 
+        let edges_p = std::fs::read("edges_p.pt").unwrap();
         let solved = CubeState::default();
-        let twisted = solved.apply_move_instance(&MoveInstance::new(BaseMoveToken::U, Direction::Normal));
+        let twisted =
+            solved.apply_move_instance(&MoveInstance::new(BaseMoveToken::U, Direction::Normal));
         let (c, eo, ep) = get_index_of_state(&twisted);
         assert_eq!(corners[c as usize], 1);
         assert_eq!(edges_o[eo as usize], 0);
@@ -89,21 +90,34 @@ mod tests {
     fn one_move_pruning_front() {
         let corners = std::fs::read("corners.pt").unwrap();
         let edges_o = std::fs::read("edges_o.pt").unwrap();
-        let edges_p = std::fs::read("edges_p.pt").unwrap(); 
+        let edges_p = std::fs::read("edges_p.pt").unwrap();
         let solved = CubeState::default();
-        let twisted = solved.apply_move_instance(&MoveInstance::new(BaseMoveToken::F, Direction::Normal));
+        let twisted =
+            solved.apply_move_instance(&MoveInstance::new(BaseMoveToken::F, Direction::Normal));
         let (c, eo, ep) = get_index_of_state(&twisted);
         assert_eq!(corners[c as usize], 1);
         assert_eq!(edges_o[eo as usize], 1);
         assert_eq!(edges_p[ep as usize], 1);
- 
     }
 
     #[test]
     fn te() {
         use crate::cube::BaseMoveToken::*;
         use crate::cube::Direction::*;
-        let seq = vec![MoveInstance { basemove: F, dir: Prime }, MoveInstance { basemove: U, dir: Normal }, MoveInstance { basemove: F, dir: Prime }];
+        let seq = vec![
+            MoveInstance {
+                basemove: F,
+                dir: Prime,
+            },
+            MoveInstance {
+                basemove: U,
+                dir: Normal,
+            },
+            MoveInstance {
+                basemove: F,
+                dir: Prime,
+            },
+        ];
         println!("{:b}", allowed_moves_after_seq(&seq));
         //6180
     }
