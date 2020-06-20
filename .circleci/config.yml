@@ -10,7 +10,7 @@ jobs:
           key: project-cache
       - run:
           name: Test
-          command: cargo test --release
+          command: cargo run --release -- -p && cargo test --release
       - save_cache:
           key: project-cache
           paths:
