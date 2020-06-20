@@ -2,6 +2,8 @@ version: 2
 
 jobs:
   build:
+    docker:
+      - image: circleci/rust:latest
     steps:
       - checkout
       - restore_cache:
