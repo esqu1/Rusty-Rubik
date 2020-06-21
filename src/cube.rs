@@ -47,7 +47,26 @@ pub struct MoveInstance {
     pub dir: Direction,
 }
 
-pub type MoveSequence = Vec<MoveInstance>;
+pub struct MoveSequence(pub Vec<MoveInstance>);
+
+impl MoveSequence {
+    pub fn get_moves(&self) -> &Vec<MoveInstance> {
+        &self.0
+    }
+    pub fn get_moves_mut(&mut self) -> &mut Vec<MoveInstance> {
+        &mut self.0
+    }
+}
+
+impl std::fmt::Display for MoveSequence {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut strs = vec![];
+        for m in self.get_moves().iter() {
+            strs.push(m.to_string());
+        }
+        write!(f, "{}", strs.join(" "))
+    }
+}
 
 impl MoveInstance {
     pub fn new(basemove: BaseMoveToken, dir: Direction) -> MoveInstance {
@@ -150,15 +169,16 @@ pub fn get_allowed_post_moves(prev_bv: u8, last_move: Option<BaseMoveToken>) -> 
 }
 
 pub fn allowed_moves_after_seq(moves: &MoveSequence) -> u8 {
-    match moves.len() {
+    let sol = moves.get_moves();
+    match sol.len() {
         0 => 0,
         1 => {
-            let last_move = moves[moves.len() - 1];
+            let last_move = sol[sol.len() - 1];
             1 << get_basemove_pos(last_move.basemove)
         }
         _ => {
-            let last_move = moves[moves.len() - 1];
-            let second_to_last = moves[moves.len() - 2];
+            let last_move = sol[sol.len() - 1];
+            let second_to_last = sol[sol.len() - 2];
             if get_antipode(last_move.basemove) == second_to_last.basemove {
                 (1 << get_basemove_pos(last_move.basemove))
                     + (1 << get_basemove_pos(second_to_last.basemove))
@@ -269,8 +289,9 @@ impl CubeState {
         (0..num_turns).fold(self.clone(), |acc, _| acc.apply_basemove(&m.basemove))
     }
 
-    pub fn apply_move_instances(&self, moves: &Vec<MoveInstance>) -> Self {
+    pub fn apply_move_instances(&self, moves: &MoveSequence) -> Self {
         moves
+            .get_moves()
             .iter()
             .fold(self.clone(), |acc, mov| acc.apply_move_instance(&mov))
     }

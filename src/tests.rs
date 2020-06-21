@@ -103,12 +103,12 @@ mod tests {
     #[ignore]
     fn u_perm_optimal() {
         let tables = PruningTables::default_tables();
-        let scramble = parse_scramble("R U' R U R U R U' R' U' R2").unwrap();
+        let scramble = MoveSequence(parse_scramble("R U' R U R U R U' R' U' R2").unwrap());
         let solved = CubeState::default();
         let twisted = solved.apply_move_instances(&scramble);
         let solver = IDASolver::new(twisted, &tables);
 
         let solution = solver.solve();
-        assert_eq!(solution.len(), 9);
+        assert_eq!(solution.get_moves().len(), 9);
     }
 }

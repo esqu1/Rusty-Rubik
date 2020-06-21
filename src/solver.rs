@@ -91,7 +91,7 @@ impl Solver for AStarSolver {
             }
         }
         path.reverse();
-        path
+        MoveSequence(path)
     }
 }
 
@@ -141,13 +141,14 @@ impl<'a> IDASolver<'a> {
                 .iter()
                 .filter(|mo| ((1 << get_basemove_pos(mo.basemove)) & allowed_moves) == 0)
             {
-                if curr_path.len() > 0 {
-                    let last_move = curr_path[curr_path.len() - 1];
+                if curr_path.get_moves().len() > 0 {
+                    let path = curr_path.get_moves_mut();
+                    let last_move = path[path.len() - 1];
                     if last_move.basemove == m.basemove {
                         continue;
                     }
                 }
-                curr_path.push(*m);
+                curr_path.get_moves_mut().push(*m);
                 let next_state = last_state.apply_move_instance(m);
                 let t = self.search_for_solution(&mut curr_path, &next_state, g + 1, bound);
                 match t {
@@ -156,7 +157,7 @@ impl<'a> IDASolver<'a> {
                         min = std::cmp::min(b, min);
                     }
                 };
-                curr_path.pop();
+                curr_path.get_moves_mut().pop();
             }
             SearchResult::NewBound(min)
         }
@@ -173,7 +174,7 @@ impl Solver for IDASolver<'_> {
 
         // initial lower bound on number of moves needed to solve start state
         let mut bound = self.pruning_tables.compute_h_value(&start_state);
-        let mut path: MoveSequence = vec![];
+        let mut path: MoveSequence = MoveSequence(vec![]);
         loop {
             println!("{}", bound);
             match self.search_for_solution(&mut path, &start_state, 0, bound) {
