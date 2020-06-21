@@ -1,5 +1,6 @@
 Rusty Rubik
 ==
+[![esqu1](https://circleci.com/gh/esqu1/Rusty-Rubik.svg?style=svg)](<LINK>)
 
 **Rusty Rubik** is a Rubik's Cube solving program implemented in Rust. 
 

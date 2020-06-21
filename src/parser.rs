@@ -1,11 +1,16 @@
+//! A parser used to parse scramble sequences into a Rust representation.
+
 use crate::cube::*;
 use regex::Regex;
 use std::str::FromStr;
 
-pub fn parse_base_move(token: &str) -> Result<BaseMoveToken, strum::ParseError> {
+fn parse_base_move(token: &str) -> Result<BaseMoveToken, strum::ParseError> {
     BaseMoveToken::from_str(token)
 }
 
+/// Parses a scramble sequence from a string.ALL_MOVES
+///
+/// Returns a Result object indicating whether the parse was successful.
 pub fn parse_scramble(scramble: &str) -> Result<Vec<MoveInstance>, strum::ParseError> {
     let mut parsed = vec![];
     let re_normal = Regex::new(r"^([UDLRFB])$").unwrap();

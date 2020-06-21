@@ -176,7 +176,7 @@ impl Solver for IDASolver<'_> {
         let mut bound = self.pruning_tables.compute_h_value(&start_state);
         let mut path: MoveSequence = MoveSequence(vec![]);
         loop {
-            println!("{}", bound);
+            println!("Searching depth {}...", bound);
             match self.search_for_solution(&mut path, &start_state, 0, bound) {
                 SearchResult::Found => {
                     break;

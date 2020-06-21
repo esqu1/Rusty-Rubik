@@ -56,7 +56,18 @@ impl MoveSequence {
     pub fn get_moves_mut(&mut self) -> &mut Vec<MoveInstance> {
         &mut self.0
     }
+
+    pub fn invert(&self) -> Self {
+        let mut moves = vec![];
+        for m in self.get_moves().iter().rev() {
+            moves.push(m.invert());
+        }
+        MoveSequence(moves)
+    }
 }
+
+pub struct Commutator(pub MoveSequence, pub MoveSequence);
+pub struct Conjugate(pub MoveSequence, pub Commutator);
 
 impl std::fmt::Display for MoveSequence {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -69,8 +80,19 @@ impl std::fmt::Display for MoveSequence {
 }
 
 impl MoveInstance {
-    pub fn new(basemove: BaseMoveToken, dir: Direction) -> MoveInstance {
-        MoveInstance { basemove, dir }
+    pub fn new(basemove: BaseMoveToken, dir: Direction) -> Self {
+        Self { basemove, dir }
+    }
+
+    pub fn invert(&self) -> Self {
+        Self::new(
+            self.basemove,
+            match self.dir {
+                Direction::Normal => Direction::Prime,
+                Direction::Prime => Direction::Normal,
+                x => x,
+            },
+        )
     }
 }
 
@@ -90,7 +112,6 @@ pub struct Move {
     pub eo_change: [i8; 12],
 }
 
-#[macro_export]
 macro_rules! cube_move {
     ($basemove: ident, $dir:ident) => {{
         MoveInstance {
