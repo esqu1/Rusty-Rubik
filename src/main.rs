@@ -1,15 +1,12 @@
 use clap::{App, Arg};
-
-mod cube;
-mod parser;
-mod pruning;
-mod solver;
-mod tests;
-
 use cube::CubeState;
-use pruning::*;
-use solver::Solver;
 use std::thread;
+
+use rusty_rubik::cube;
+use rusty_rubik::parser;
+use rusty_rubik::pruning::*;
+use rusty_rubik::solver::IDASolver;
+use rusty_rubik::solver::Solver;
 
 fn main() {
     let matches = App::new("Rsubik")
@@ -59,7 +56,7 @@ fn main() {
             // load the pruning tables
             let pruning_tables = PruningTables::default_tables();
 
-            let solver = solver::IDASolver::new(new_state, &pruning_tables);
+            let solver = IDASolver::new(new_state, &pruning_tables);
             let solution = solver.solve();
             println!("{}", solution);
             println!("Verifying the above solution...");
