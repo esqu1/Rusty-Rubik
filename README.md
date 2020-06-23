@@ -4,6 +4,8 @@ Rusty Rubik
 
 **Rusty Rubik** is a Rubik's Cube solving program implemented in Rust. 
 
+[Documentation](https://docs.rs/rusty-rubik/) · [crates.io](http://crates.io/crates/rusty-rubik) 
+
 
 Downloading
 ===
