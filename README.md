@@ -38,7 +38,8 @@ Then you can run the executable in `target/release/rusty-rubik`. You can see the
 
 Documentation
 ===
-You can build the documentation for this project via:
+The document requires the KaTeX header file to be built with it to
+render properly. You can build the documentation for this project via:
 ```
-cargo doc --no-deps --open
+RUSTDOCFLAGS="--html-in-header header.html" cargo doc --no-deps --open
 ```
