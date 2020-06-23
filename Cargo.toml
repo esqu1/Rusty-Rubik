@@ -1,6 +1,6 @@
 [package]
 name = "rusty-rubik"
-version = "0.1.0"
+version = "0.1.1"
 description = "A crate providing interaction and solvers for the Rubik's Cube."
 repository = "https://github.com/esqu1/Rusty-Rubik"
 authors = ["Brandon Lin <brandbest1@gmail.com>"]
