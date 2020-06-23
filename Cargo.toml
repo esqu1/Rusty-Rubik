@@ -1,11 +1,10 @@
 [package]
 name = "rusty-rubik"
-version = "0.1.1"
+version = "0.1.2"
 description = "A crate providing interaction and solvers for the Rubik's Cube."
 repository = "https://github.com/esqu1/Rusty-Rubik"
 authors = ["Brandon Lin <brandbest1@gmail.com>"]
 edition = "2018"
-license = "MIT"
 license-file = "LICENSE.md"
 readme = "README.md"
 

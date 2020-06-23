@@ -1,5 +1,4 @@
 use clap::{App, Arg};
-use cube::CubeState;
 use std::thread;
 
 use rusty_rubik::cube;
@@ -61,7 +60,7 @@ fn main() {
             println!("{}", solution);
             println!("Verifying the above solution...");
             let maybe_solved = new_state2.apply_move_instances(&solution);
-            if maybe_solved == CubeState::default() {
+            if maybe_solved == cube::CubeState::default() {
                 println!("Successfully verified!");
             } else {
                 println!("Uh oh...it's wrong...rip you.");

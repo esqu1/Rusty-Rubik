@@ -122,6 +122,7 @@ impl std::fmt::Display for MoveSequence {
 /// One can create a Commutator object as such:
 /// ```
 /// use rusty_rubik::cube::*;
+/// use rusty_rubik::cube_move;
 ///
 /// fn main() {
 ///     let a = MoveSequence(vec![
@@ -147,6 +148,7 @@ pub struct Commutator(pub MoveSequence, pub MoveSequence);
 ///
 /// ```
 /// use rusty_rubik::cube::*;
+/// use rusty_rubik::cube_move;
 ///
 /// fn main() {
 ///     let c = MoveSequence(vec![
@@ -185,11 +187,13 @@ struct Move {
 ///
 /// ```
 /// use rusty_rubik::cube::*;
+/// use rusty_rubik::cube_move;
 ///
 /// fn main() {
 ///     let r_prime: MoveInstance = cube_move!(R, Prime);
 ///     let u2: MoveInstance = cube_move!(U, Double);
 /// }
+/// ```
 #[macro_export]
 macro_rules! cube_move {
     ($basemove: ident, $dir:ident) => {{
