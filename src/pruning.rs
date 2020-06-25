@@ -91,6 +91,10 @@ fn iddfs_search(
             .filter(|mo| (1 << get_basemove_pos(mo.basemove)) & allowed_moves == 0)
         {
             let new_state = state.apply_move_instance(m);
+            let index = prop_func(&new_state);
+            if index > 0 && bv[index] != 0 && bv[index] < original_depth - d + 1 {
+                continue;
+            }
             let new_allowed_moves = get_allowed_post_moves(allowed_moves, Some(m.basemove));
             iddfs_search(
                 &new_state,

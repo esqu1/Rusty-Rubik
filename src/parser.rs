@@ -8,7 +8,7 @@ fn parse_base_move(token: &str) -> Result<BaseMoveToken, strum::ParseError> {
     BaseMoveToken::from_str(token)
 }
 
-/// Parses a scramble sequence from a string.ALL_MOVES
+/// Parses a scramble sequence from a string.
 ///
 /// Returns a Result object indicating whether the parse was successful.
 pub fn parse_scramble(scramble: &str) -> Result<Vec<MoveInstance>, strum::ParseError> {
