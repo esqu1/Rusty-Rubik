@@ -70,6 +70,39 @@ fn iddfs(
     }
 }
 
+fn fill_pruning_table(
+    original_depth: u8,
+    mut bv: &mut [u8],
+    allowed_moves: u8,
+    prop_func: &dyn Fn(&CubeState) -> usize,
+    inv_prop_func: &dyn Fn(usize) -> CubeState,
+) {
+    for d in 0..original_depth {
+        if d == 0 {
+            // in this case all entries are zero, so manually take the solved state
+        }
+        for i in 0..bv.len() {
+            if (original_depth == 1 && i == 0) || bv[i] == original_depth - 1 {
+                let new_cube_state = inv_prop_func(i);
+                for m in ALL_MOVES
+                    .iter()
+                    .filter(|mo| (1 << get_basemove_pos(mo.basemove)) & allowed_moves == 0)
+                {
+                    let new_state = state.apply_move_instance(m);
+                    let index = prop_func(&new_state);
+                    if index > 0
+                        && bv[index] != 0
+                        && bv[index] != 0
+                        && bv[index] < original_depth - 1
+                    {
+                        continue;
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// Starts a depth-bounded DFS from the given state.
 fn iddfs_search(
     state: &CubeState,

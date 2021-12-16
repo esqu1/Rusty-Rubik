@@ -10,7 +10,18 @@
 //!
 //!
 
-pub mod cube;
-pub mod parser;
-pub mod pruning;
-pub mod solver;
+// pub mod cube;
+// pub mod parser;
+// pub mod pruning;
+// pub mod solver;
+
+pub mod puzzle;
+
+use pyo3::prelude::*;
+
+#[pymodule]
+fn rusty_rubik(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add_class::<puzzle::Cube3>()?;
+    m.add_class::<puzzle::CubeMove>()?;
+    Ok(())
+}
